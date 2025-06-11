@@ -1,0 +1,25 @@
+#spring.datasource.url=jdbc:mysql://${DB_HOST}:${DB_PORT}/paymybuddy?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.url=jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_NAME}?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
+server.port=8081
+
+# ❌ Ligne inutile — Spring ne reconnaît pas spring.datasource.port, car c'est déjà inclus dans l'URL
+# spring.datasource.port=${DB_PORT}
+
+spring.liquibase.enabled=true
+spring.liquibase.change-log=classpath:db/changelog/db.changelog-master.yaml
+spring.liquibase.contexts=dev,prod
+spring.liquibase.default-schema=
+spring.liquibase.drop-first=false
+
+spring.jpa.hibernate.ddl-auto=none
+
+# ✅ Important : éviter tout conflit avec des init SQL manuels
+spring.sql.init.mode=never
+
+spring.config.import=optional:application-secrets.properties
+
+# ✅ Important : permet de recalculer les checksums des migrations Liquibase
+spring.liquibase.clear-checksums=true
+

@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paymybuddy-app
+  namespace: paymybuddy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: paymybuddy-app
+  template:
+    metadata:
+      labels:
+        app: paymybuddy-app
+    spec:
+      containers:
+        - name: paymybuddy-container
+          image: rootcfk/paymybuddy-k8s-jenkins:v2
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql.paymybuddy.svc.cluster.local:3306/db_paymybuddy
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+      volumes:
+        - name: db-init-scripts
+          configMap:
+            name: db-init-scripts-configmap

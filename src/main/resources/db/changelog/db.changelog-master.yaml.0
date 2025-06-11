@@ -1,0 +1,10 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-schema
+      author: toi
+      changes:
+        - sqlFile:
+            path: database/create.sql
+            relativeToChangelogFile: false
+            endDelimiter: ";"
+            splitStatements: true
