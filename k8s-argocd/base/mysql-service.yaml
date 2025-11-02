@@ -1,0 +1,26 @@
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: mysql
+#   namespace: paymybuddy
+# spec:
+#   selector:
+#     app: mysql
+#   ports:
+#     - port: 3306
+#       targetPort: 3306
+#   type: ClusterIP
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: paymybuddy
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+  clusterIP: None  # Important pour StatefulSet (headless service)
+  selector:
+    app: mysql
+

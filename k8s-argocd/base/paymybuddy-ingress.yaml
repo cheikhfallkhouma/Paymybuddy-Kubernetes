@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: paymybuddy-ingress
+  namespace: paymybuddy
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: paymybuddy.local   # Nom de domaine local (tu vas l’ajouter dans /etc/hosts)
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: paymybuddy-webapp
+                port:
+                  number: 80

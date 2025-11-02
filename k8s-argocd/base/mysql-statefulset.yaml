@@ -1,0 +1,126 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: mysql
+#   namespace: paymybuddy
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: mysql
+#   template:
+#     metadata:
+#       labels:
+#         app: mysql
+#     spec:
+#       containers:
+#         - name: mysql
+#           image: mysql:8.0
+#           args: ["--datadir=/data"]  # 👈 Nouvelle ligne pour changer le répertoire de données
+#           ports:
+#             - containerPort: 3306
+#           env:
+#             - name: MYSQL_ROOT_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: mysql-secret
+#                   key: MYSQL_ROOT_PASSWORD
+#             - name: MYSQL_DATABASE
+#               value: db_paymybuddy
+#           volumeMounts:
+#             - name: mysql-storage
+#               mountPath: /data  # 👈 Monté à /data au lieu de /var/lib/mysql
+#             - name: mysql-init-script
+#               mountPath: /docker-entrypoint-initdb.d
+#       volumes:
+#         - name: mysql-storage
+#           hostPath:
+#             path: /data/mysql  # 👈 Dossier du NŒUD
+#             type: DirectoryOrCreate
+#         - name: mysql-init-script
+#           configMap:
+#             name: mysql-initdb-config
+
+# apiVersion: apps/v1
+# kind: StatefulSet
+# metadata:
+#   name: mysql
+#   namespace: paymybuddy
+# spec:
+#   serviceName: "mysql"   # Nécessaire pour StatefulSet
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: mysql
+#   template:
+#     metadata:
+#       labels:
+#         app: mysql
+#     spec:
+#       containers:
+#         - name: mysql
+#           image: mysql:8.0
+#           args: ["--datadir=/data"]  
+#           ports:
+#             - containerPort: 3306
+#           env:
+#             - name: MYSQL_ROOT_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: mysql-secret
+#                   key: MYSQL_ROOT_PASSWORD
+#             - name: MYSQL_DATABASE
+#               value: db_paymybuddy
+#           volumeMounts:
+#             - name: mysql-storage
+#               mountPath: /data
+#   volumeClaimTemplates:
+#     - metadata:
+#         name: mysql-storage
+#       spec:
+#         accessModes: ["ReadWriteOnce"]
+#         resources:
+#           requests:
+#             storage: 10Gi
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  namespace: paymybuddy
+spec:
+  serviceName: "mysql"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0
+          args: ["--datadir=/data"]   # dossier de données personnalisé
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: MYSQL_DATABASE
+              value: db_paymybuddy
+          volumeMounts:
+            - name: mysql-storage
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: mysql-storage
+      spec:
+        accessModes: ["ReadWriteOnce"]
+        resources:
+          requests:
+            storage: 10Gi

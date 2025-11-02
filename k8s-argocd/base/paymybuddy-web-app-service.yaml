@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: paymybuddy-webapp
+  namespace: paymybuddy
+spec:
+  #type: NodePort
+  type: ClusterIP # ← Change to ClusterIP for Ingress usage
+  selector:
+    app: paymybuddy-app  # ← correspond aux labels du Deployment
+  ports:
+    - port: 80            # Port exposé sur le cluster
+      targetPort: 8081    # Port sur lequel le conteneur écoute
+      nodePort: 30081     # Port sur le nœud (accessible en http://<NODE_IP>:30081)
+
+#Pour mettre en place un Ingress, le type de service doit être ClusterIP car l'Ingress controller va gérer l'accès externe au service
+#et rediriger le trafic vers le service via son ClusterIP interne.
+#Donc, on change le type de service de NodePort à ClusterIP.
+# minikube addons enable ingress #Pour activer l'Ingress controller dans Minikube
+#kubectl apply -f paymybuddy-ingress.yaml
+#kubectl apply -f paymybuddy-service.yaml
+#Prometheus

@@ -1,0 +1,247 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: paymybuddy-app
+#   namespace: paymybuddy
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: paymybuddy-app
+#   template:
+#     metadata:
+#       labels:
+#         app: paymybuddy-app
+#     spec:
+#       containers:
+#       - name: paymybuddy-container
+#         image: rootcfk/paymaybuddy-kubernetes:v1
+#         ports:
+#         - containerPort: 8080
+#         env:
+#         - name: SPRING_DATASOURCE_USERNAME
+#           valueFrom:
+#             secretKeyRef:
+#               name: mysql-secret
+#               key: MYSQL_USER
+#         - name: SPRING_DATASOURCE_PASSWORD
+#           valueFrom:
+#             secretKeyRef:
+#               name: mysql-secret
+#               key: MYSQL_ROOT_PASSWORD
+#         - name: SPRING_DATASOURCE_URL
+#           value: jdbc:mysql://mysql:3306/db_paymybuddy
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: paymybuddy-app
+#   namespace: paymybuddy
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: paymybuddy-app
+#   template:
+#     metadata:
+#       labels:
+#         app: paymybuddy-app
+#     spec:
+#       containers:
+#         - name: paymybuddy-container
+#           #image: rootcfk/paymaybuddy-kubernetes:v1
+#           #image: rootcfk/paymybuddy:v2
+#           image: rootcfk/paymybuddy-k8s-jenkins:v2
+#           imagePullPolicy: Always
+
+#           ports:
+#             - containerPort: 8081
+#           env:
+#             - name: SPRING_DATASOURCE_URL
+#               value: jdbc:mysql://mysql.paymybuddy.svc.cluster.local:3306/db_paymybuddy
+#             - name: SPRING_DATASOURCE_USERNAME
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: mysql-secret
+#                   key: MYSQL_USER
+#             - name: SPRING_DATASOURCE_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: mysql-secret
+#                   key: MYSQL_ROOT_PASSWORD
+
+
+#Dernière version stable avant les probes
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: paymybuddy-app
+#   namespace: paymybuddy
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       app: paymybuddy-app
+#   template:
+#     metadata:
+#       labels:
+#         app: paymybuddy-app
+#     spec:
+#       initContainers:
+#         - name: init-db
+#           image: mysql:8.0
+#           command:
+#             - sh
+#             - -c
+#             - |
+#               echo "Waiting for MySQL to be ready..."
+#               until mysqladmin ping -h mysql.paymybuddy.svc.cluster.local -P 3306 --silent; do
+#                 sleep 2
+#               done
+#               echo "Running init script..."
+#               mysql -h mysql.paymybuddy.svc.cluster.local -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" < /scripts/init.sql
+#           env:
+#             - name: MYSQL_USER
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: mysql-secret
+#                   key: MYSQL_USER
+#             - name: MYSQL_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: mysql-secret
+#                   key: MYSQL_ROOT_PASSWORD
+#           volumeMounts:
+#             - name: db-init-scripts
+#               mountPath: /scripts
+#       containers:
+#         - name: paymybuddy-container
+#           image: rootcfk/paymybuddy-k8s-jenkins:v2
+#           imagePullPolicy: Always
+#           ports:
+#             - containerPort: 8081
+#           env:
+#             - name: SPRING_DATASOURCE_URL
+#               value: jdbc:mysql://mysql.paymybuddy.svc.cluster.local:3306/db_paymybuddy
+#             - name: SPRING_DATASOURCE_USERNAME
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: mysql-secret
+#                   key: MYSQL_USER
+#             - name: SPRING_DATASOURCE_PASSWORD
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: mysql-secret
+#                   key: MYSQL_ROOT_PASSWORD
+#       volumes:
+#         - name: db-init-scripts
+#           configMap:
+#             name: db-init-scripts-configmap
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paymybuddy-app
+  namespace: paymybuddy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: paymybuddy-app
+  template:
+    metadata:
+      labels:
+        app: paymybuddy-app
+    spec:
+      initContainers:
+        - name: init-db
+          image: mysql:8.0
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for MySQL to be ready..."
+              until mysqladmin ping -h mysql.paymybuddy.svc.cluster.local -P 3306 --silent; do
+                sleep 2
+              done
+              echo "Running init script..."
+              mysql -h mysql.paymybuddy.svc.cluster.local -u "$MYSQL_USER" -p"$MYSQL_PASSWORD" < /scripts/init.sql
+          env:
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+          volumeMounts:
+            - name: db-init-scripts
+              mountPath: /scripts
+      containers:
+        - name: paymybuddy-container
+          image: rootcfk/paymybuddy-k8s-jenkins:v2
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8081
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:mysql://mysql.paymybuddy.svc.cluster.local:3306/db_paymybuddy
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_USER
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+          readinessProbe:
+            tcpSocket:
+              port: 8081
+            initialDelaySeconds: 10 # Kubernetes attend 10 secondes après le démarrage du conteneur avant de commencer les vérifications.
+            periodSeconds: 5 # Kubernetes effectue la vérification tous les 5 secondes.
+          livenessProbe:
+            tcpSocket:
+              port: 8081
+            initialDelaySeconds: 30
+            periodSeconds: 10
+      volumes:
+        - name: db-init-scripts
+          configMap:
+            name: db-init-scripts-configmap
+
+
+# Exact ✅. La commande :
+
+# kubectl describe pod paymybuddy-app-8485799788-8t7c4 -n paymybuddy
+
+
+# te fournit un état détaillé du pod, et à partir de ce que tu as partagé :
+
+# InitContainer terminé avec succès → MySQL est prêt et le script d’init a été exécuté.
+
+# Conteneur principal Running et Ready → ton application est en cours d’exécution et prête à recevoir du trafic.
+
+# Liveness/Readiness probes OK → Kubernetes n’a détecté aucun problème pour le pod.
+
+# Événements récents → pas d’erreurs ni de crashs signalés.
+
+# 🔹 Conclusion concrète
+
+# Oui, cette commande confirme que tout se passe bien :
+
+# Le pod est initialisé ✅
+
+# Le pod est prêt ✅
+
+# Aucun container n’a échoué ✅
+
+# Kubernetes ne prévoit aucun redémarrage automatique pour l’instant ✅
+
+# En résumé : ton pod est stable et fonctionnel dans le cluster.
